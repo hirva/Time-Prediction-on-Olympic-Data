@@ -1,0 +1,100 @@
+Assignment 1 (Answers)
+
+Python 3.6.0 |Anaconda 4.3.0 (64-bit)| (default, Dec 23 2016, 11:57:41) [MSC v.1900 64 bit (AMD64)]
+Type "copyright", "credits" or "license" for more information.
+
+IPython 5.1.0 -- An enhanced Interactive Python.
+?         -> Introduction and overview of IPython's features.
+%quickref -> Quick reference.
+help      -> Python's own help system.
+object?   -> Details about 'object', use 'object??' for extra details.
+Example 1: Load the data in olympics.mat into Python.  This file contains several datasets: male100, male200, male400, female100, female200, and female400.  For each dataset, the first column is the year, and second column is the time in seconds.  You may ignore the other columns.
+print("Example 1:")
+print("Loading Olympics.mat file into Python")
+data = sio.loadmat('olympics.mat')
+#Creating a dataframe of male100 and filtering data by "year" and "running time"
+male100 = pd.DataFrame(data['male100'][:,0:2])
+#renaming column names:
+male100.columns=['year','time']
+#split the data into training/testing sets
+male100_X = male100['year']
+male100_Y = male100['time']
+#Loading Olympics.mat file into Python
+
+
+
+
+
+
+
+Example 2:  Use matplotlib.pyplot to plot male100, reproducing Figure 1.1 in the textbook.
+
+ 
+
+Example 3: Use sklearn.linear_model.LinearRegression to fit male100.  List the coefficients, then predict the values for x = 2012 and x = 2016.  Compare your results to those found in Section 1.2.
+
+Coefficient 1 w0: [[-0.01333089]]
+Mean squared error: %.2f 0.00958220929123
+Coefficient 2 w1(Intercept): %.2f [ 36.4164559]
+Mean squared error for 2012 and 2016: 4017751.54
+ 
+Example 4: Plot male100 and the line you fit in experiment (3) above, reproducing Figure 1.5 in the textbook.
+ 
+
+
+
+
+
+Example 5: Use linear regression to fit a line to female400.  How does the error for this model compare to the error when fitting a line to male100?
+
+      year   time
+0   1964.0  52.00
+1   1968.0  52.00
+2   1972.0  51.08
+3   1976.0  49.29
+4   1980.0  48.88
+5   1984.0  48.83
+6   1988.0  48.65
+7   1992.0  48.83
+8   1996.0  48.25
+9   2000.0  49.11
+10  2004.0  49.41
+11  2008.0  49.62
+Coefficient 1 w0: 
+ [[-0.0601486]]
+Mean squared error for female400: %.2f 1.16478003142
+Coefficient 2 w1: %.2f [ 169.11762238]
+Error difference between Man100 and Female400 is %f -1.15519782213
+ 
+Example 6: Fit a 3rd order polynomial to female400.  Does the error improve?
+Mean squared error 3rd Polynomial: 0.13
+Example 7: Fit a 5th order polynomial to female400.  Does the error improve?
+
+           5            4         3             2
+6.859e-07 x - 0.006819 x + 27.12 x - 5.392e+04 x + 5.36e+07 x - 2.131e+10
+Mean squared error 5th Order: 0.07
+ 
+
+
+
+
+
+
+
+
+
+
+Example 8: Use LOOCV for both the 3rd and 5th order polynomials. (Hint: use sklearn.model_selection.LeaveOneOut.) Which polynomial is a better choice?
+LeaveOneOut()
+mean_squared_error_3rdpoly:  0.124661940216
+mean_squared_error_5thpoly:  0.0644768093789
+ 
+Example 9: Use sklearn.linear_model.Ridge with α = 0.1 to fit a 5th order polynomial to female400.  How do the coefficients compare to those found with linear regression?
+Coefficient 1: [-0.0601443]
+Coefficient 2: [ 169.10897116]
+Example 10: Use sklearn.linear_model.RidgeCV to find the best value for α across the range 0.001, 0.002, 0.004, 0.01, 0.02, 0.04, 0.1, 0.2, 0.4, 1.0.
+Best Alpha value:  2.0
+
+
+
+
