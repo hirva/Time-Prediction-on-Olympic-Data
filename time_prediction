@@ -1,0 +1,188 @@
+import scipy.io as sio
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import LeaveOneOut
+from sklearn.linear_model import Ridge,RidgeCV
+
+print("Example 1:")
+print("Loading Olympics.mat file into Python")
+
+data = sio.loadmat('olympics.mat')
+
+
+#Creating a dataframe of male100 and filtering data by "year" and "running time"
+male100 = pd.DataFrame(data['male100'][:,0:2])
+#renaming column names:
+male100.columns=['year','time']
+
+#split the data into training/testing sets
+male100_X = male100['year']
+male100_Y = male100['time']
+
+print("Example 2: ")
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('Scatter Graph Example 1:')
+plt.scatter(male100['year'],male100['time'])
+plt.show()
+#Taking ratio of 80%(Trainig set)-20%(Validation set) for "Year"
+male100_X_train = male100.year[:-5]
+male100_X_test = male100.year[-5:]
+#Taking ratio of 80%(Trainig set)-20%(Validation set) for "Running Time"
+male100_y_train = male100.time[:-5]
+male100_y_test = male100.time[-5:]
+#Creating a linear regression model
+regr = linear_model.LinearRegression()
+#new shape to an array without changing its data
+#trying to fit the data into model
+print("example 3:")
+regr.fit(male100_X.reshape(-1,1),male100_Y.reshape(-1,1))
+#predicting running time for years in test data
+male100_y_pred = regr.predict(male100_X_test.reshape(-1,1))
+male100_y_pred_full = regr.predict(male100_X.reshape(-1,1))
+male100_y_pred_new = regr.predict((np.array([2012,2016])).reshape(-1,1))
+print("Coefficient 1 w0:", regr.coef_)
+mean_squared_error_male100=mean_squared_error(male100_y_test, male100_y_pred)
+print("Mean squared error: %.2f" ,mean_squared_error_male100)
+print("Coefficient 2 w1(Intercept): %.2f",regr.intercept_)
+print("Mean squared error for 2012 and 2016: %.2f" % mean_squared_error((np.array([2012,2016])), male100_y_pred_new))
+
+print("example 4:")
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('male100 Example 4:')
+plt.scatter(male100_X, male100_Y)
+plt.plot(male100_X, male100_y_pred_full)
+plt.xticks(())
+plt.yticks(())
+plt.show()
+#ex. 5
+#Making a dataframe of female400
+print("example 5:")
+female400 = pd.DataFrame(data['female400'][:,0:2])
+female400.columns=['year','time']
+print(female400)
+female400_X = female400['year']
+female400_Y = female400['time']
+female400_X_train = female400.year[:-2]
+female400_X_test = female400.year[-2:]
+# Split the targets into training/testing sets with 80-20 ratio
+female400_y_train = female400.time[:-2]
+female400_y_test = female400.time[-2:]
+#linear regression model
+regr_female = linear_model.LinearRegression()
+regr_female.fit(female400_X.reshape(-1,1),female400_Y.reshape(-1,1))
+female400_y_pred = regr_female.predict(female400_X_test.reshape(-1,1))
+female400_y_pred_full = regr_female.predict(female400_X.reshape(-1,1))
+print('Coefficient 1 w0: \n', regr_female.coef_)
+mean_squared_error_female400 = mean_squared_error(female400_y_test, female400_y_pred)
+print("Mean squared error for female400: %.2f" , mean_squared_error_female400)
+print("Coefficient 2 w1: %.2f",regr_female.intercept_)
+difference=mean_squared_error_male100-mean_squared_error_female400
+print("Error difference between Man100 and Female400 is %f",difference)
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('female400 Example 5:')
+plt.scatter(female400_X, female400_Y)
+plt.plot(female400_X, female400_y_pred_full)
+plt.xticks(())
+plt.yticks(())
+plt.show()
+
+print("example 6:")
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('female400 3rd order polynomial Example 6:')
+#Coefficients for the polynomial
+"""coefficients1 = np.polyfit(female400_X,female400_Y, 3)
+#equation prediction
+polynomial1 = np.poly1d(coefficients1)
+plt.plot(female400_X,female400_Y,'o')
+plt.plot(female400_X,polynomial1(female400_X),'r--')
+print("Mean squared error 3rd Polynomial: %.2f" % mean_squared_error(female400_Y, polynomial1(female400_X)))
+
+print("Example 7: ")
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('female400 3rd and 5th order polynomial Example 7:')
+coefficients2 = np.polyfit(female400_X,female400_Y, 5)
+polynomial2 = np.poly1d(coefficients2)
+print(polynomial2)
+plt.plot(female400_X,female400_Y,'o')
+plt.plot(female400_X,polynomial2(female400_X),'b--')
+print("Mean squared error 5th Order: %.2f" % mean_squared_error(female400_Y, polynomial2(female400_X)))
+"""
+#If we increase the degree of polynomial, Mean squared error will decrease but the model will fail while predcting for new values.
+#example 8
+#3rd Degree Poly
+print("example 8: ")
+l1 = LeaveOneOut()
+l1.get_n_splits(female400_X)
+l2 = LeaveOneOut()
+l2.get_n_splits(female400_Y)
+print(l1)
+total_error=0
+for train_index, test_index in l1.split(female400_X):
+    #print("TRAIN:", train_index, "TEST:", test_index)
+    X_train, X_test = female400_X[train_index], female400_X[test_index]
+    y_train, y_test = female400_Y[train_index], female400_Y[test_index]
+    #print(X_train, X_test, y_train, y_test)
+    coefficients3 = np.polyfit(X_train,y_train, 3)
+    polynomial3 = np.poly1d(coefficients3)
+    #plt.plot(X_train,polynomial3(X_train),'b--')
+    """plt.plot(X_train,y_train,'o')
+    plt.plot(X_train,polynomial1(X_train),'r--')"""
+    total_error += mean_squared_error(y_train, polynomial3(X_train))
+mean_squared_error_3rdpoly = total_error/12
+print("mean_squared_error_3rdpoly: ", mean_squared_error_3rdpoly)
+
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('female400 Example 8 for Leave one Out 3rd Polynomial:')
+plt.plot(X_train,y_train,'o')
+plt.plot(X_train,polynomial3(X_train),'b--')
+
+l1 = LeaveOneOut()
+l1.get_n_splits(female400_X)
+l2 = LeaveOneOut()
+l2.get_n_splits(female400_Y)
+total_error=0
+for train_index, test_index in l1.split(female400_X):
+    #print("TRAIN:", train_index, "TEST:", test_index)
+    X_train, X_test = female400_X[train_index], female400_X[test_index]
+    y_train, y_test = female400_Y[train_index], female400_Y[test_index]
+    #print(X_train, X_test, y_train, y_test)
+    coefficients3 = np.polyfit(X_train,y_train, 5)
+    polynomial3 = np.poly1d(coefficients3)
+    #plt.plot(X_train,polynomial3(X_train),'b--')
+    total_error += mean_squared_error(y_train, polynomial3(X_train))
+mean_squared_error_5thpoly = total_error/12
+print("mean_squared_error_5thpoly: ", mean_squared_error_5thpoly)
+plt.xlabel('Year')
+plt.ylabel('Time')
+plt.title('female400 Example 8 for Leave one Out 5th polynomial:')
+plt.plot(X_train,y_train,'o')
+plt.plot(X_train,polynomial3(X_train),'r--')
+
+
+
+print("example 9: ")
+coefficients2 = np.polyfit(female400_X,female400_Y, 5)
+polynomial2 = np.poly1d(coefficients2)
+pred_time=polynomial2(female400_X)
+ridge_1 = Ridge(alpha=0.1)
+ridge_1.fit(female400_X.reshape(-1,1),pred_time.reshape(-1,1)) 
+
+print("coefficient 1:",ridge_1.coef_[0])
+print("coefficient 2:",ridge_1.intercept_)
+
+print("example 10: ")
+
+ridge_2 = RidgeCV(alphas=[0.001, 0.002, 0.004, 0.01, 0.02, 0.04, 0.1, 0.2, 0.4, 1.0])
+ridge_2.fit(female400_X.reshape(-1,1),female400_Y.reshape(-1,1)) 
+ridge_y_pred = regr_female.predict(female400_X.reshape(-1,1))
+#bigger alpha gives better regularisation in this case
+print("Best Alpha value: ",ridge_2.alpha_)
